@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "fcntl.h": "c",
+        "complex": "c"
+    },
+    "c-cpp-compile-run.c-flags": "-Wall -Wextra -D_REENTRANT -lpthread",
+    "c-cpp-compile-run.cpp-flags": "-Wall -Wextra"
+}
