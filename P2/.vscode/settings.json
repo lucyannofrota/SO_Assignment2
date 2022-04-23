@@ -1,0 +1,14 @@
+{
+    "files.associations": {
+        "fcntl.h": "c",
+        "complex": "c",
+        "unistd.h": "c",
+        "stdio.h": "c",
+        "string.h": "c",
+        "mman.h": "c",
+        "my_buffer.h": "c",
+        "semaphore.h": "c"
+    },
+    "c-cpp-compile-run.c-flags": "-Wall -Wextra -D_REENTRANT -lpthread",
+    "c-cpp-compile-run.cpp-flags": "-Wall -Wextra"
+}
