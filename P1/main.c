@@ -36,7 +36,7 @@ void setup_queue(int msq,int n_terms){
     }
     else{
         config.msg_qbytes = sizeof(struct mymsg)*n_terms;
-        printf("Queue Size: %i\n",(int)config.msg_qbytes);
+        printf("Queue Size: %i bytes\n",(int)config.msg_qbytes);
         if(msgctl(msq,IPC_SET,&config) != 0){
             perror("Failed to setup msq\n");
         }
@@ -217,8 +217,6 @@ void producer(void* arg){
     exit(0);
 }
 
-int MAIN_PID;
-
 int pid_list[N];
 int pstatus_list[N];
 
@@ -234,17 +232,11 @@ void catch_sigint(int val){
         kill(pid_list[i],SIGINT);
     }
     free_resources();
-    kill(MAIN_PID,SIGINT);
     exit(0);
 }
 
 int main(int arc, char **argv){
     printf("Problema 1\n");
-
-    MAIN_PID = getpid();
-
-    // Configurando Sinais
-    signal(SIGINT, catch_sigint);
 
     // Criando as chaves para as filas
     key_t key1 = ftok("tkn", 0);
@@ -273,6 +265,9 @@ int main(int arc, char **argv){
         pid_list[i+1] = launch_process(&(pstatus_list[i+1]),consumer,&i);   
     }
 
+    // Configurando Sinais
+    signal(SIGINT, catch_sigint);
+
     // Esperando Processos
     for(i = 0; i < N; i++){
         wait(&(pstatus_list[i]));
@@ -281,7 +276,7 @@ int main(int arc, char **argv){
     // Libertando recursos
     free_resources();
 
-    printf("\n\nDone!\n");
+    printf("\n\nProcesso pai concluido!\n");
 
     return 0;
 }

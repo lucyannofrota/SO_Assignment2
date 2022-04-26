@@ -50,3 +50,9 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+*Key_*
+
+P2/s_mem
+
+P2/output.asc
