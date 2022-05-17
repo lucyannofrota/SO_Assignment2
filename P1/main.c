@@ -2,14 +2,13 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <fcntl.h>
-#include <sys/types.h>
+
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <pthread.h>
-#include <time.h>
+
 #include <stdlib.h>
-#include <sys/msg.h>
-#include <errno.h>
+
 
 
 #define N_MAX 49
@@ -74,8 +73,6 @@ void print_buffer(int *ptr, int size){
     int i;
     for(i = 0; i < N_NUMBERS; i++){
         printf("%i | %i\n", i+1,ptr[i]);
-        // if(i == N_NUMBERS-1) printf("%i",ptr[i]);
-        // else printf("%i,",ptr[i]);
     }
 }
 
@@ -89,8 +86,6 @@ void write_to_file(int *buff,int ref){
     print_buffer(buff,N_NUMBERS);
     close(fdf); // Fechar file
     dup2(stdout_,1); // Retornar porta de escrita ao stdout
-
-    return 0;
 }
 
 void consumer(void* arg){

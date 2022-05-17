@@ -10,10 +10,6 @@
 
 #include <semaphore.h>
 
-// #include "my_tools.h"
-
-// #include "my_buffer.h"
-
 FILE* file = NULL;
 
 int read_line(FILE** file, double* value){

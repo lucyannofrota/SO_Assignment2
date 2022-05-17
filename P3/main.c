@@ -1,23 +1,10 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
-#include <sys/types.h>
-#include <sys/ipc.h>
 #include <sys/msg.h>
 
 #include <pthread.h>
-#include <time.h>
-#include <stdlib.h>
-
-#include <sys/msg.h>
-
-#include <errno.h>
-
-
-void* consumer_thread(void* arg){
-
-    pthread_exit(NULL);
-}
 
 void* calc_thread(void* arg){
 
@@ -71,7 +58,7 @@ int main(int arc, char **argv){
     int *ret;
 
     // Aguardando o termino do thread
-    pthread_join(thr1,&ret);
+    pthread_join(thr1,(void**)&ret);
 
     printf("Soma: %i\nProduto: %i\n",ret[0],ret[1]);
 

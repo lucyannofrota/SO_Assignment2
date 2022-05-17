@@ -10,8 +10,6 @@
 
 #include <semaphore.h>
 
-#include <math.h>
-
 #include <signal.h>
 
 double* mptr;

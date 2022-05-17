@@ -1,0 +1,8 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory '/home/lucyannofrota/SO/SO_Assignment2/P2'
+gcc -c client.c -o client.o
+gcc client.o -Wall -Wextra -D_REENTRANT -lpthread -lrt -o client
+gcc -c server.c -o server.o
+gcc server.o -Wall -Wextra -D_REENTRANT -lpthread -lrt -o server
+make: Leaving directory '/home/lucyannofrota/SO/SO_Assignment2/P2'
+ 

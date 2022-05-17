@@ -13,11 +13,14 @@
 FILE* file = NULL;
 
 int read_line(FILE** file, double* value){
-    if(*file == NULL) *file = fopen("input.asc", "r"); // Abre o ficheiro na primeira vez que é chamada
+    if(*file == NULL){
+        *file = fopen("input.asc", "r"); // Abre o ficheiro na primeira vez que é chamada
+        if(*file == NULL) perror("Missing \"input.asc\"");
+    }
     char f_number[strlen("-0.")-FLT_MIN_10_EXP+1]; // Buffer com o tamanho maximo que uma variavel float pode assumir em ascii
     if(fgets(f_number,sizeof f_number,*file) != NULL){ // Le apenas uma linha do ficheiro
         *value = atof(f_number); // Escreve o valor lido no ponteiro
-        printf("Valor lido de input.asc %.2f\n",*value);
+        printf("Valor lido de input.asc: %.2f\n",*value);
         return 1;
     }
     return 0; // Retorna 0 caso chegue ao fim do ficheiro
@@ -65,7 +68,7 @@ int main(int arc, char **argv){
     // Envia o valor terminador na memoria partilhada
     sem_wait(sem_w);
     mptr[0] = DBL_MIN;
-    printf("Client DBL_MIN %.2f\n",(float)mptr[0]);
+    printf("Client DBL_MIN\n");
     sem_post(sem_r);
 
     free_resources(); // Liberta recursos
