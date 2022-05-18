@@ -6,7 +6,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Tue May 17 19:35:57 2022
+# Make data base, printed on Wed May 18 10:56:42 2022
 
 # Variables
 
@@ -49,7 +49,7 @@ VTE_VERSION = 6003
 # environment
 VSCODE_NLS_CONFIG = {"locale":"en-us","availableLanguages":{},"_languagePackSupport":true}
 # environment
-JOURNAL_STREAM = 8:61707
+JOURNAL_STREAM = 8:58754
 # environment
 XDG_CONFIG_DIRS = /etc/xdg/xdg-ubuntu:/etc/xdg
 # environment
@@ -71,7 +71,7 @@ XDG_DATA_DIRS = /usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/d
 # environment
 ROS_ETC_DIR = /opt/ros/noetic/etc/ros
 # environment
-DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus,guid=a3c6bc6ced2cfdea0108377d6283e9be
+DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus,guid=5aeaebc4d267042c483dc79e6284c25b
 # environment
 VSCODE_VERBOSE_LOGGING = true
 # environment
@@ -79,7 +79,7 @@ LC_CTYPE = pt_PT.UTF-8
 # environment
 ROS_PACKAGE_PATH = /home/lucyannofrota/catkin_ws/src:/opt/ros/noetic/share
 # environment
-MANAGERPID = 2055
+MANAGERPID = 2157
 # environment
 ROS_PYTHON_VERSION = 3
 # environment
@@ -101,7 +101,7 @@ CLUTTER_IM_MODULE = xim
 # environment
 GPG_AGENT_INFO = /run/user/1000/gnupg/S.gpg-agent:0:1
 # environment
-SESSION_MANAGER = local/lucyannofrota:@/tmp/.ICE-unix/2311,unix/lucyannofrota:/tmp/.ICE-unix/2311
+SESSION_MANAGER = local/lucyannofrota:@/tmp/.ICE-unix/2415,unix/lucyannofrota:/tmp/.ICE-unix/2415
 # environment
 XDG_RUNTIME_DIR = /run/user/1000
 # environment
@@ -121,7 +121,7 @@ DISABLE_WAYLAND = 1
 # environment
 ELECTRON_RUN_AS_NODE = 1
 # environment
-INVOCATION_ID = 9f03084a496c4bf6adcedfac863ae8ac
+INVOCATION_ID = 49b4e53e30b248649b932725b4a23196
 # environment
 GDK_PIXBUF_MODULEDIR = /snap/code/96/usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders
 # default
@@ -151,7 +151,7 @@ PWD = /home/lucyannofrota/SO/SO_Assignment2
 # default
 .LOADED := 
 # environment
-SSH_AGENT_PID = 2279
+SSH_AGENT_PID = 2383
 # environment
 PKG_CONFIG_PATH = /home/lucyannofrota/catkin_ws/devel/lib/pkgconfig:/opt/ros/noetic/lib/pkgconfig
 # environment
@@ -209,7 +209,7 @@ SHLVL = 1
 # environment
 GNOME_SHELL_SESSION_MODE = ubuntu
 # environment
-VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-b4644795-f29c-4d29-b119-d7540e6a9334.sock
+VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-32c8ae87-8973-4e4f-b35e-32535781d302.sock
 # default
 MAKE_VERSION := 4.2.1
 # environment
@@ -276,14 +276,17 @@ LC_ALL = C
 DBUS_STARTER_BUS_TYPE = session
 # environment
 CONDA_PYTHON_EXE = /home/lucyannofrota/anaconda3/bin/python
+ 
+make: *** No rule to make target 'all'.  Stop.
+
 # environment
 QT4_IM_MODULE = uim
 # environment
-GNOME_TERMINAL_SCREEN = /org/gnome/Terminal/screen/57d6bfa1_641b_44bb_9b61_becfd57b2b15
+GNOME_TERMINAL_SCREEN = /org/gnome/Terminal/screen/8eb0d228_5905_4318_b9a8_f4074d71e340
 # automatic
 ^F = $(notdir $^)
 # environment
-GNOME_TERMINAL_SERVICE = :1.608
+GNOME_TERMINAL_SERVICE = :1.112
 # default
 SUFFIXES := 
 # environment
@@ -294,9 +297,6 @@ _CE_M =
 CHROME_DESKTOP = code-url-handler.desktop
 # environment
 WINDOWPATH = 2
- 
-make: *** No rule to make target 'all'.  Stop.
-
 # default
 .INCLUDE_DIRS = /usr/include /usr/local/include /usr/include
 # environment
@@ -310,9 +310,9 @@ LANG = C
 # environment
 TERM = xterm-256color
 # environment
-VSCODE_PID = 18747
+VSCODE_PID = 6299
 # environment
-DBUS_STARTER_ADDRESS = unix:path=/run/user/1000/bus,guid=a3c6bc6ced2cfdea0108377d6283e9be
+DBUS_STARTER_ADDRESS = unix:path=/run/user/1000/bus,guid=5aeaebc4d267042c483dc79e6284c25b
 # environment
 _CE_CONDA = 
 # variable set hash-table stats:
@@ -382,6 +382,6 @@ GNUmakefile:
 # strcache performance: lookups = 21 / hit rate = 14%
 # hash-table stats:
 # Load=18/8192=0%, Rehash=0, Collisions=1/21=5%
-# Finished Make data base on Tue May 17 19:35:57 2022
+# Finished Make data base on Wed May 18 10:56:42 2022
 
  

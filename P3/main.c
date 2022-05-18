@@ -7,12 +7,14 @@
 #include <pthread.h>
 
 void* calc_thread(void* arg){
+    // Inicializando ponteiro de retorno
+    int *ret = malloc(2*sizeof(int));
 
+    // Ponteiro para receber o argumento de entrada
     int *args = (int*) arg;
 
     printf("Os valores recebidos pelo thread são: %i, %i\n",args[0],args[1]);
 
-    int *ret = (int*) malloc(2*sizeof(int));
 
 
     ret[0] = args[0] + args[1];
@@ -21,21 +23,57 @@ void* calc_thread(void* arg){
     pthread_exit(ret);
 }
 
+// Inicializando ponteiro para receber a resposta do thread
+int *ret;
 
-int MAIN_PID;
+void free_resources(void){
+    free(ret);
+}
 
-void catch_sigint(int val){
-    kill(MAIN_PID,SIGINT);
+void catch_interrupts(int val){
+    printf("\nSignal received. Terminating the program\n");
+    free_resources();
     exit(0);
 }
 
 int main(int arc, char **argv){
     printf("Problema 3\n");
 
-    MAIN_PID = getpid();
-
     // Configurando Sinais
-    signal(SIGINT, catch_sigint);
+
+    // Core
+    signal(SIGBUS, catch_interrupts);
+    signal(SIGABRT, catch_interrupts);
+    signal(SIGFPE, catch_interrupts);
+    signal(SIGILL, catch_interrupts);
+    signal(SIGIOT, catch_interrupts);
+    signal(SIGSEGV, catch_interrupts);
+    signal(SIGQUIT, catch_interrupts);
+    signal(SIGSYS, catch_interrupts);
+    signal(SIGXFSZ, catch_interrupts);
+    signal(SIGTRAP, catch_interrupts);
+    signal(SIGXCPU, catch_interrupts);
+
+    // Term
+    signal(SIGALRM, catch_interrupts);
+    signal(SIGHUP, catch_interrupts);
+    signal(SIGINT, catch_interrupts);
+    signal(SIGIO, catch_interrupts);
+    signal(SIGKILL, catch_interrupts);          
+    signal(SIGPIPE, catch_interrupts);
+    signal(SIGPOLL, catch_interrupts);
+    signal(SIGPROF, catch_interrupts);
+    signal(SIGPWR, catch_interrupts);
+    signal(SIGSTKFLT, catch_interrupts);
+    signal(SIGTERM, catch_interrupts);
+    signal(SIGUSR1, catch_interrupts);
+    signal(SIGUSR2, catch_interrupts);
+    signal(SIGVTALRM, catch_interrupts);
+
+    // Stop
+    signal(SIGTTIN, catch_interrupts);
+    signal(SIGTTOU, catch_interrupts);
+    signal(SIGSTOP, catch_interrupts);
 
     // Inicializando vetor de argumentos para o thread
     int arg1[2];
@@ -54,8 +92,6 @@ int main(int arc, char **argv){
     // Criando Threads
     pthread_create(&thr1,NULL,calc_thread, &arg1);
 
-    // Inicializando ponteiro para receber a resposta do thread
-    int *ret;
 
     // Aguardando o termino do thread
     pthread_join(thr1,(void**)&ret);

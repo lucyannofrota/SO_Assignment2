@@ -153,12 +153,6 @@ void consumer(void* arg){
 
 void producer(void* arg){
     srand(7);
-    // srand(time(NULL));
-
-    // if(arg != NULL){
-    // int M1 = ((int*) arg)[0];
-    // int N1 = ((int*) arg)[1];
-    // }
 
     struct mymsg msg1, msg2;
 
@@ -219,9 +213,12 @@ void free_resources(void){
     // Fechando as filas
     msgctl(msq1,IPC_RMID,NULL);
     msgctl(msq2,IPC_RMID,NULL);
+
+    unlink("tkn");
 }
 
-void catch_sigint(int val){
+void catch_interrupts(int val){
+    printf("\nSignal received. Terminating the program\n");
     int i;
     for(i = 0; i < N; i++){
         kill(pid_list[i],SIGINT);
@@ -232,6 +229,45 @@ void catch_sigint(int val){
 
 int main(int arc, char **argv){
     printf("Problema 1\n");
+
+    // Configurando Sinais
+
+    // Core
+    signal(SIGBUS, catch_interrupts);
+    signal(SIGABRT, catch_interrupts);
+    signal(SIGFPE, catch_interrupts);
+    signal(SIGILL, catch_interrupts);
+    signal(SIGIOT, catch_interrupts);
+    signal(SIGSEGV, catch_interrupts);
+    signal(SIGQUIT, catch_interrupts);
+    signal(SIGSYS, catch_interrupts);
+    signal(SIGXFSZ, catch_interrupts);
+    signal(SIGTRAP, catch_interrupts);
+    signal(SIGXCPU, catch_interrupts);
+
+    // Term
+    signal(SIGALRM, catch_interrupts);
+    signal(SIGHUP, catch_interrupts);
+    signal(SIGINT, catch_interrupts);
+    signal(SIGIO, catch_interrupts);
+    signal(SIGKILL, catch_interrupts);          
+    signal(SIGPIPE, catch_interrupts);
+    signal(SIGPOLL, catch_interrupts);
+    signal(SIGPROF, catch_interrupts);
+    signal(SIGPWR, catch_interrupts);
+    signal(SIGSTKFLT, catch_interrupts);
+    signal(SIGTERM, catch_interrupts);
+    signal(SIGUSR1, catch_interrupts);
+    signal(SIGUSR2, catch_interrupts);
+    signal(SIGVTALRM, catch_interrupts);
+
+    // Stop
+    signal(SIGTTIN, catch_interrupts);
+    signal(SIGTTOU, catch_interrupts);
+    signal(SIGSTOP, catch_interrupts);
+
+    int fd_o = open("tkn",O_CREAT | O_WRONLY,0666);
+    close(fd_o);
 
     // Criando as chaves para as filas
     key_t key1 = ftok("tkn", 0);
@@ -249,8 +285,6 @@ int main(int arc, char **argv){
     setup_queue(msq1,M);
     setup_queue(msq2,M);
 
-    
-
     // Criando Processo Produtor
     pid_list[0] = launch_process(&(pstatus_list[0]),producer,NULL);
 
@@ -260,8 +294,10 @@ int main(int arc, char **argv){
         pid_list[i+1] = launch_process(&(pstatus_list[i+1]),consumer,&i);   
     }
 
-    // Configurando Sinais
-    signal(SIGINT, catch_sigint);
+
+
+
+    
 
     // Esperando Processos
     for(i = 0; i < N; i++){
@@ -275,3 +311,9 @@ int main(int arc, char **argv){
 
     return 0;
 }
+
+
+// signal(SIGHUP, catch_interrupts);
+// signal(SIGQUIT, catch_interrupts);
+// signal(SIGABRT, catch_interrupts);
+// signal(SIGSEGV, catch_interrupts);

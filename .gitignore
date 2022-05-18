@@ -56,3 +56,5 @@ dkms.conf
 P2/s_mem
 
 P2/output.asc
+
+.vscode/

@@ -10,7 +10,8 @@
 
 #include <semaphore.h>
 
-#include <signal.h>
+
+#include <sys/wait.h>
 
 double* mptr;
 
@@ -22,6 +23,12 @@ void free_resources(void){
     sem_close(sem_w);
     sem_unlink("serv_c_sem_r");
     sem_unlink("serv_c_sem_w");
+}
+
+void catch_interrupts(int val){
+    printf("\nSignal received. Terminating the program\n");
+    free_resources();
+    exit(0);
 }
 
 void write_bin(double* value, int mode){
@@ -44,7 +51,40 @@ int main(int arc, char **argv){
     printf("Problema 2| Server\n");
 
     // Configurando Sinais
-    signal(SIGINT, catch_sigint);
+
+    // Core
+    signal(SIGBUS, catch_interrupts);
+    signal(SIGABRT, catch_interrupts);
+    signal(SIGFPE, catch_interrupts);
+    signal(SIGILL, catch_interrupts);
+    signal(SIGIOT, catch_interrupts);
+    signal(SIGSEGV, catch_interrupts);
+    signal(SIGQUIT, catch_interrupts);
+    signal(SIGSYS, catch_interrupts);
+    signal(SIGXFSZ, catch_interrupts);
+    signal(SIGTRAP, catch_interrupts);
+    signal(SIGXCPU, catch_interrupts);
+
+    // Term
+    signal(SIGALRM, catch_interrupts);
+    signal(SIGHUP, catch_interrupts);
+    signal(SIGINT, catch_interrupts);
+    signal(SIGIO, catch_interrupts);
+    signal(SIGKILL, catch_interrupts);          
+    signal(SIGPIPE, catch_interrupts);
+    signal(SIGPOLL, catch_interrupts);
+    signal(SIGPROF, catch_interrupts);
+    signal(SIGPWR, catch_interrupts);
+    signal(SIGSTKFLT, catch_interrupts);
+    signal(SIGTERM, catch_interrupts);
+    signal(SIGUSR1, catch_interrupts);
+    signal(SIGUSR2, catch_interrupts);
+    signal(SIGVTALRM, catch_interrupts);
+
+    // Stop
+    signal(SIGTTIN, catch_interrupts);
+    signal(SIGTTOU, catch_interrupts);
+    signal(SIGSTOP, catch_interrupts);
 
     // Inicializando a memoria compartilhada
     int fd = shm_open("s_mem",O_CREAT | O_RDWR | O_TRUNC, 0666);
@@ -100,7 +140,6 @@ int main(int arc, char **argv){
 
     // Libertando recursos
     free_resources();
-    // sem_close("serv_c_sem");
 
     printf("\n\nDone!\n");
 
