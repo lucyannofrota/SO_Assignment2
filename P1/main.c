@@ -19,6 +19,8 @@
 #define N 4
 #define M 40 + N
 
+int pid_list[N]; // Array utilizada para fazer track dos PIDs dos processos filhos. Essa lista tem importancia crucial para finalizar os processos corretamente caso ocorra um erro
+int pstatus_list[N];
 
 int msq1, msq2;
 
@@ -27,7 +29,28 @@ struct mymsg {
     int   mtext[1];    /* Payload. */
 };
 
+void free_resources(void){
+    // Fechando as filas
+    msgctl(msq1,IPC_RMID,NULL);
+    msgctl(msq2,IPC_RMID,NULL);
+
+    unlink("tkn");
+}
+
+void catch_interrupts(int val){
+    printf("\nSignal received. Terminating the program\n");
+    int i;
+    for(i = 0; i < N; i++){ // Envia 'SIGTERM' para todos os processo filhos
+        kill(pid_list[i],SIGTERM);
+    }
+    free_resources(); // Liberta os recursos utilizados
+    exit(0); // Finaliza esse processo
+}
+
 void setup_queue(int msq,int n_terms){
+    // Inicialização da queue
+
+
     struct msqid_ds config;
 
     if(msgctl(msq,IPC_STAT,&config) != 0){
@@ -43,13 +66,17 @@ void setup_queue(int msq,int n_terms){
 }
 
 int launch_process(int *childStatus,void (*myfunc)(void*), void* arg){
+    // childStatus - Ponteiro utilizado para que o processo pai tenha acesso ao status do processo filho
+    // myfunc      - Ponteiro para uma função que recebe um ponteiro void como argumento e retona void. Esse parametro é utilizado para dar funcionalidade ao processo filho lançado
+    // arg         - Ponteiro que indica o argumento de entrada da função apontada por 'myfunc'
+
     printf("Processo Realizando Fork|PID %i\n",getpid());
     // Fazendo Fork
     int myPID = fork();
     if(myPID == -1) perror("Failed to fork\n");
     if(myPID == 0){ // Selecionando processo filho
         printf("Processo Filho Iniciado|PID %i\n",getpid());
-        myfunc(arg);
+        myfunc(arg); // Executanto a função pretendida pelo processo. Essa função será 'consumer()' ou 'producer()'
         exit(1);
     }
     else{ // Processo pai
@@ -58,46 +85,52 @@ int launch_process(int *childStatus,void (*myfunc)(void*), void* arg){
 }
 
 int get_rand(void){
+    // Função para gerar numero aleatorio dentro do intervalo desejado
     return rand()%((N_MAX+1)-N_MIN) + N_MIN;
 }
 
-int has_duplicates(int *ptr, int new){
+int has_duplicates(int *ptr, int len, int new){
+    // Função que verifica se o já existe o valor 'new' no array apontado por 'ptr'
     int i;
-    for(i = 0; i < N_NUMBERS; i++){
+    for(i = 0; i < len; i++){
         if(ptr[i] == new) return 1;
     }
     return 0;
 }
 
-void print_buffer(int *ptr, int size){
+void print_buffer(int *ptr,int len){
     int i;
-    for(i = 0; i < N_NUMBERS; i++){
+    for (i = 0; i < len; i++)
+    {
         printf("%i | %i\n", i+1,ptr[i]);
     }
 }
 
-void write_to_file(int *buff,int ref){
+void write_to_file(int *buff,int ref,int len){
     char name[10];
     sprintf(name,"Key_%i",ref);
     int stdout_ = dup(1);
     close(1); // Fechar porta de escrita
     int fdf = open(name,O_WRONLY|O_CREAT,0666); // Abrir/criar o ficheiro em mode de escrita
     dup2(fdf,1); // Redirecionar porta de escrita
-    print_buffer(buff,N_NUMBERS);
+    print_buffer(buff, len);
     close(fdf); // Fechar file
     dup2(stdout_,1); // Retornar porta de escrita ao stdout
 }
 
 void consumer(void* arg){
 
-    int ref = 0;
+    int arg_ref = 0, arg_num;
 
     if(arg != NULL){
-        ref = *((int*) arg);
+        arg_ref = ((int *)arg)[0];
+        arg_num = ((int *)arg)[1];
     }
     else{
-        perror("Missing Argument.");
+        perror("Missing Arguments.");
     }
+
+    // O argumento recebido que é armazenado na variavel 'arg_ref' é utilizado para gerar o ficheiro de output 'Key_{arg_ref}'
 
     struct mymsg msg1, msg2;
 
@@ -105,17 +138,17 @@ void consumer(void* arg){
 
     int numbers = 1;
 
-    int buff[N_NUMBERS];
+    int buff[arg_num];
 
     do{
-        if(msgrcv(msq1,&msg1,sizeof(struct mymsg),0,0) == -1){
+        if(msgrcv(msq1,&msg1,sizeof(struct mymsg),0,0) == -1){ // Nessa instrução é feita uma tentativa de receber uma mensagem presente na queue 'msq1'
             perror("Error sending message\n");
         }
         else{
-            if(has_duplicates(buff,msg1.mtext[0])){
+            if(has_duplicates(buff,arg_num,msg1.mtext[0])){ // Caso seja bem sucedido em receber a mensagem é feita a verificação se o valor recebido está duplicado
                 printf("Consumer| Valor Duplicado\n");
                 msg2.mtext[0] = 1;
-                if(msgsnd(msq2,&msg2,sizeof(struct mymsg),0) != 0){
+                if(msgsnd(msq2,&msg2,sizeof(struct mymsg),0) != 0){ // Envio de mensagem para queue 'msq2' com o valor 1, que significa que é para gerar um novo valor
                     perror("Error sending message\n");
                 }
             }
@@ -123,36 +156,41 @@ void consumer(void* arg){
                 buff[numbers-1] = msg1.mtext[0];
                 numbers++;
 
-                if(numbers > N_NUMBERS){
+                if(numbers > arg_num){
                     msg2.mtext[0] = 0;
-                    if(msgsnd(msq2,&msg2,sizeof(struct mymsg),0) != 0){
+                    if(msgsnd(msq2,&msg2,sizeof(struct mymsg),0) != 0){ // Envio de mensagem para queue 'msq2' com o valor 0, que significa que esse processo já recebeu todos os valores necessarios
                         perror("Error sending message\n");
                     }
-                    break;
+                    break; // Quebra o loop caso já tenha recebido todos os valores necessarios
                 }
                 else{
                     msg2.mtext[0] = 1;
-                    if(msgsnd(msq2,&msg2,sizeof(struct mymsg),0) != 0){
+                    if(msgsnd(msq2,&msg2,sizeof(struct mymsg),0) != 0){ // Envio de mensagem para queue 'msq2' com o valor 1, que significa que é para gerar um novo valor
                         perror("Error sending message\n");
                     }
                 }
             }
         }
-        // if(has_duplicates(buff,))
     }while(1);
+
+    write_to_file(buff,arg_ref,arg_num);
 
     printf("Consumer| Processo Concluido!\n");
 
-    // print_buffer(buff,N_NUMBERS);
-
-    write_to_file(buff,ref);
-
-    // pthread_exit(NULL);
     exit(0);
 }
 
 void producer(void* arg){
-    srand(7);
+
+    int arg_M = 0, arg_N = 0;
+
+    if(arg != NULL){
+        arg_M = ((int*) arg)[0];
+        arg_N = ((int*) arg)[1];
+    }
+    else{
+        perror("Missing Arguments.");
+    }
 
     struct mymsg msg1, msg2;
 
@@ -161,12 +199,10 @@ void producer(void* arg){
 
     int i;
 
-    printf("Producer| [M,N] = [%i,%i]\n",M,N);
+    printf("Producer| [N_number,M,N] = [%i,%i]\n",arg_M,arg_N);
 
-    // Enviando as mesagens para msq2
-    for(i = 0; i < M; i++){//get_rand();
-        // msg2.mtext[0] = 'c';
-        // printf("Num: %i\n",msg2.mtext[0]);
+    // Enviando M valores para a queue 'msq2'
+    for(i = 0; i < arg_M; i++){
         // Send to queue
         if(msgsnd(msq2,&msg2,sizeof(struct mymsg),0) != 0){
             perror("Error sending message\n");
@@ -176,54 +212,28 @@ void producer(void* arg){
         
             perror("Failed to get info\n");
         }
-        // else{
-        //     printf("Queue: [%i]\n",(int)config.msg_qnum);
-        // }
     }
 
     printf("%i mensagens eviadas para msq2\n",M);
 
     int count = 0;
 
-
     while(1){
-        if(msgrcv(msq2,&msg2,sizeof(struct mymsg),0,0) == -1){
+        if(msgrcv(msq2,&msg2,sizeof(struct mymsg),0,0) == -1){ // Leitura de valor da queue 'msq2'
             perror("Error sending message\n");
         }
         else{
-            // printf("Gerando Novo Valor\n");
-            if(msg2.mtext[0] == 0) count++;
-            else{
+            if(msg2.mtext[0] == 0) count++; // Caso o valor lido seja '0', indica que algum processo consumidor concluiu o seu trabalho
+            else{ // Caso o valor lido seja '1', indica que deve-se enviar um novo valor para a queue 'msq1'
                 msg1.mtext[0] = get_rand();
                 if(msgsnd(msq1,&msg1,sizeof(struct mymsg),0) != 0){
                     perror("Error sending message\n");
                 }
             }
         }
-        if(count == N) break;
+        if(count == arg_N) break; // Caso N processos tenham terminado, esse processo deve terminar em seguida
     }
 
-    exit(0);
-}
-
-int pid_list[N];
-int pstatus_list[N];
-
-void free_resources(void){
-    // Fechando as filas
-    msgctl(msq1,IPC_RMID,NULL);
-    msgctl(msq2,IPC_RMID,NULL);
-
-    unlink("tkn");
-}
-
-void catch_interrupts(int val){
-    printf("\nSignal received. Terminating the program\n");
-    int i;
-    for(i = 0; i < N; i++){
-        kill(pid_list[i],SIGINT);
-    }
-    free_resources();
     exit(0);
 }
 
@@ -286,17 +296,16 @@ int main(int arc, char **argv){
     setup_queue(msq2,M);
 
     // Criando Processo Produtor
-    pid_list[0] = launch_process(&(pstatus_list[0]),producer,NULL);
+    int args_producer[] = {M,N};
+    pid_list[0] = launch_process(&(pstatus_list[0]),producer,args_producer); 
 
     // Criando Processos Consumidores
     int i;
+    int args_consumer[] = {0, N_NUMBERS};
     for(i = 0; i < N; i++){
-        pid_list[i+1] = launch_process(&(pstatus_list[i+1]),consumer,&i);   
+        args_consumer[0] = i;
+        pid_list[i + 1] = launch_process(&(pstatus_list[i + 1]), consumer, args_consumer);
     }
-
-
-
-
     
 
     // Esperando Processos
@@ -311,9 +320,3 @@ int main(int arc, char **argv){
 
     return 0;
 }
-
-
-// signal(SIGHUP, catch_interrupts);
-// signal(SIGQUIT, catch_interrupts);
-// signal(SIGABRT, catch_interrupts);
-// signal(SIGSEGV, catch_interrupts);

@@ -15,8 +15,6 @@ void* calc_thread(void* arg){
 
     printf("Os valores recebidos pelo thread são: %i, %i\n",args[0],args[1]);
 
-
-
     ret[0] = args[0] + args[1];
     ret[1] = args[0] * args[1];
 

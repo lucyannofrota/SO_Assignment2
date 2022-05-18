@@ -17,32 +17,19 @@ double* mptr;
 
 sem_t *sem_r, *sem_w;
 
+int fd;
+
 void free_resources(void){
     munmap(mptr,1*sizeof(double));
     sem_close(sem_r);
     sem_close(sem_w);
     sem_unlink("serv_c_sem_r");
     sem_unlink("serv_c_sem_w");
+    close(fd);
 }
 
 void catch_interrupts(int val){
     printf("\nSignal received. Terminating the program\n");
-    free_resources();
-    exit(0);
-}
-
-void write_bin(double* value, int mode){
-    static int fd = 0;
-    if(mode == 1) close(fd);
-    else{
-        if(fd == 0) fd = open("input.bin",O_CREAT|O_WRONLY|O_TRUNC,0666);
-        write(fd,value,1*sizeof(double));
-    }
-}
-
-void catch_sigint(int val){
-    // kill(MAIN_PID,SIGINT);
-    printf("\nCustom ctrl c\n");
     free_resources();
     exit(0);
 }
@@ -87,7 +74,7 @@ int main(int arc, char **argv){
     signal(SIGSTOP, catch_interrupts);
 
     // Inicializando a memoria compartilhada
-    int fd = shm_open("s_mem",O_CREAT | O_RDWR | O_TRUNC, 0666);
+    fd = shm_open("s_mem",O_CREAT | O_RDWR | O_TRUNC, 0666);
     if(fd == -1){
         perror("open() error.");
     }
@@ -108,21 +95,25 @@ int main(int arc, char **argv){
 
     
     int len = 0;
+
+    fd = open("input.bin", O_CREAT | O_RDWR | O_TRUNC, 0666);
+
     do{
         sem_wait(sem_r); // Aguarda pelo semaforo de leitura
         if(mptr[0] != DBL_MIN){
             printf("[Memoria partilhada] -> Server: %.2f\n",mptr[0]);
-            write_bin(mptr,0);
+            write(fd, mptr, 1 * sizeof(double));
             len++;
         }
+        else break;
         sem_post(sem_w); // Liberta o semaforo de escrita
     }while(mptr[0] != DBL_MIN);
 
     double list[len];
 
     // Lendo o file "input.bin"
-    fd = open("input.bin",O_RDONLY,0666);
-    read(fd,list,len*sizeof(double));
+    lseek(fd, (off_t)0, SEEK_SET);
+    read(fd, list, len * sizeof(double));
 
     // Escrevendo o file "output.asc"
     fd = open("output.asc",O_CREAT | O_WRONLY | O_TRUNC,0666);

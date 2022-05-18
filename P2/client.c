@@ -17,11 +17,13 @@
 
 
 FILE* file = NULL;
+int file_status = 0; // file_status é importante para garantir que file não será finalizado 2 vezes.
 
 int read_line(FILE** file, double* value){
     if(*file == NULL){
         *file = fopen("input.asc", "r"); // Abre o ficheiro na primeira vez que é chamada
         if(*file == NULL) perror("Missing \"input.asc\"");
+        else file_status = 1;
     }
     char f_number[strlen("-0.")-FLT_MIN_10_EXP+1]; // Buffer com o tamanho maximo que uma variavel float pode assumir em ascii
     if(fgets(f_number,sizeof f_number,*file) != NULL){ // Le apenas uma linha do ficheiro
@@ -29,12 +31,16 @@ int read_line(FILE** file, double* value){
         printf("Valor lido de input.asc: %.2f\n",*value);
         return 1;
     }
-    return 0; // Retorna 0 caso chegue ao fim do ficheiro
+    else{
+        fclose(*file);
+        file_status = 0;
+        return 0; // Retorna 0 caso chegue ao fim do ficheiro
+    }
 }
 
 
 void free_resources(void){
-    fclose(file);
+    if (file_status == 1) fclose(file);
 }
 
 void catch_interrupts(int val){
